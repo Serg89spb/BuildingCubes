@@ -3,6 +3,7 @@
 
 #include "Components/BC_BuildingComponent.h"
 
+#include "Blocks/BC_C_BaseBlock.h"
 #include "Camera/CameraComponent.h"
 #include "Character/BC_C_Character.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -40,10 +41,24 @@ void UBC_BuildingComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if(M_isStartAction && M_CurrentAction == EActionType::Building)
+	if (M_isStartAction && M_CurrentAction == EActionType::Building)
 	{
 		FHitResult HitResult;
 		DrawTrace(HitResult);
+
+		if (HitResult.bBlockingHit)
+		{
+			if (!IsValid(M_CurrentBlock) && BigBlockClass)
+			{
+				FTransform Transform;
+				Transform.SetLocation(HitResult.Location);
+				M_CurrentBlock = GetWorld()->SpawnActor<ABC_C_BaseBlock>(BigBlockClass, Transform);
+			}
+			else if(IsValid(M_CurrentBlock))
+			{
+				M_CurrentBlock->SetActorLocation(HitResult.Location);
+			}
+		}
 	}
 }
 
@@ -51,21 +66,22 @@ void UBC_BuildingComponent::DrawTrace(FHitResult& HitResult)
 {
 	TArray<AActor*> IgnoredActors;
 	IgnoredActors.Add(M_Owner);
+	IgnoredActors.AddUnique(M_CurrentBlock);
 
 	if (!IsValid(M_Owner)) return;
 	const FVector StartLoc = M_Owner->BC_LightSphere->GetComponentLocation();
 	FVector EndLoc = StartLoc + M_Owner->FindComponentByClass<UCameraComponent>()->GetForwardVector() * 5000.0f;
 
 	UKismetSystemLibrary::LineTraceSingle(GetWorld(),
-										  StartLoc,
-										  EndLoc,
-										  TraceTypeQuery1,
-										  false,
-										  IgnoredActors,
-										  EDrawDebugTrace::ForOneFrame,
-										  HitResult,
-										  true,
-										  FLinearColor::Red,
-										  FLinearColor::Green,
-										  0.5f);
+	                                      StartLoc,
+	                                      EndLoc,
+	                                      TraceTypeQuery1,
+	                                      false,
+	                                      IgnoredActors,
+	                                      EDrawDebugTrace::ForOneFrame,
+	                                      HitResult,
+	                                      true,
+	                                      FLinearColor::Red,
+	                                      FLinearColor::Green,
+	                                      0.5f);
 }
