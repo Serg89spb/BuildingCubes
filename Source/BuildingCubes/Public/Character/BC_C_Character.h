@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "BC_C_Character.generated.h"
 
+class UBC_BuildingComponent;
 class UCameraComponent;
 UCLASS()
 class BUILDINGCUBES_API ABC_C_Character : public ACharacter
@@ -14,6 +15,9 @@ class BUILDINGCUBES_API ABC_C_Character : public ACharacter
 
 public:
 	ABC_C_Character();
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="Components")
+	UStaticMeshComponent* BC_LightSphere;
 
 protected:
 	virtual void BeginPlay() override;
@@ -28,7 +32,7 @@ protected:
 	USkeletalMeshComponent* BC_FirstPersonGun;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="Components")
-	UStaticMeshComponent* BC_LightSphere;
+	UBC_BuildingComponent* BC_BuildingComponent;
 
 public:
 	virtual void Tick(float DeltaTime) override;
