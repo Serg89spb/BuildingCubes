@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BuildingCubes/BC_Variables.h"
 #include "Components/ActorComponent.h"
 #include "BC_BuildingComponent.generated.h"
 
@@ -26,6 +27,11 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
+	bool M_isStartAction;
+	EActionType M_CurrentAction;
+	
 	UPROPERTY()
 	ABC_C_Character* M_Owner;
+
+	void DrawTrace(FHitResult& HitResult);
 };
