@@ -44,6 +44,8 @@ private:
 
 	EActionType M_CurrentAction;
 
+	FVector M_BlocLoc;
+
 	UPROPERTY()
 	ABC_C_Character* M_Owner;
 
@@ -53,4 +55,5 @@ private:
 	void DrawTrace(TArray<AActor*> IgnoredActors, FHitResult& HitResult, float MaxDistance);
 	bool CreateBlock(const FHitResult& HitResult);
 	void CalculateStartEndLoc(float Distance, FVector& StartLoc, FVector& EndLoc);
+	void SetBlockLocation(const FHitResult& HitResult);
 };
