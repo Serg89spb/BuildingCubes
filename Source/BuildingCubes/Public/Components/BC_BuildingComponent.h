@@ -33,6 +33,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Trace")
 	float WithoutHitDistance = 500.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Materials")
+	TArray<FBlockMaterialPair> BlockMaterialPairs;
+
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
@@ -51,6 +54,12 @@ private:
 
 	UPROPERTY()
 	ABC_C_BaseBlock* M_CurrentBlock;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* M_CurrentPreviewMat;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* M_CurrentBaseMat;
 
 	void DrawTrace(TArray<AActor*> IgnoredActors, FHitResult& HitResult, float MaxDistance);
 	bool CreateBlock(const FHitResult& HitResult);

@@ -34,6 +34,15 @@ void UBC_BuildingComponent::EndAction()
 	{
 		M_isStartBuilding = false;
 		M_isStartPreview = false;
+
+		if (IsValid(M_CurrentBlock) && IsValid(GetWorld()) && IsValid(BlockMaterialPairs[0].Base))
+		{
+			if (!M_CurrentBaseMat)
+			{
+				M_CurrentBaseMat = UMaterialInstanceDynamic::Create(BlockMaterialPairs[0].Base, GetWorld());
+			}
+			M_CurrentBlock->BC_MeshComponent->SetMaterial(0, M_CurrentBaseMat);
+		}
 	}
 	if (M_CurrentAction == EActionType::Destroy)
 	{
@@ -98,6 +107,15 @@ bool UBC_BuildingComponent::CreateBlock(const FHitResult& HitResult)
 	FTransform Transform;
 	Transform.SetLocation(HitResult.Location);
 	M_CurrentBlock = GetWorld()->SpawnActor<ABC_C_BaseBlock>(BigBlockClass, Transform);
+
+	if (IsValid(M_CurrentBlock) && IsValid(GetWorld()) && IsValid(BlockMaterialPairs[0].Preview))
+	{
+		if (!M_CurrentPreviewMat)
+		{
+			M_CurrentPreviewMat = UMaterialInstanceDynamic::Create(BlockMaterialPairs[0].Preview, GetWorld());
+		}
+		M_CurrentBlock->BC_MeshComponent->SetMaterial(0, M_CurrentPreviewMat);
+	}
 	return M_isStartPreview = IsValid(M_CurrentBlock);
 }
 
@@ -112,34 +130,34 @@ void UBC_BuildingComponent::SetBlockLocation(const FHitResult& HitResult)
 	if (HitResult.bBlockingHit)
 	{
 		M_BlocLoc = HitResult.Location.GridSnap(50.0f) + HitResult.Normal * 50.0f;
-
-		const TArray<AActor*> IgnoredActors = {M_Owner, M_CurrentBlock};
-		TArray<FHitResult> BoxHits;
-
-		UKismetSystemLibrary::BoxTraceMulti(GetWorld(),
-		                                    M_BlocLoc,
-		                                    M_BlocLoc,
-		                                    FVector(50.0f),
-		                                    FRotator::ZeroRotator,
-		                                    TraceTypeQuery1,
-		                                    false,
-		                                    IgnoredActors,
-		                                    EDrawDebugTrace::ForOneFrame,
-		                                    BoxHits,
-		                                    true);
-
-		for (const auto& OneHit : BoxHits)
-		{
-			M_BlocLoc += OneHit.Normal;
-			UE_LOG(LogBC_BuildingComponent,Display,TEXT("Hit: %s"),*OneHit.Normal.ToString());
-		}
-
-		M_CurrentBlock->SetActorLocation(M_BlocLoc);
 	}
 	else
 	{
 		FVector StartLoc(ForceInitToZero), EndLoc(ForceInitToZero);
 		CalculateStartEndLoc(WithoutHitDistance, StartLoc, EndLoc);
-		M_CurrentBlock->SetActorLocation(EndLoc);
+		M_BlocLoc = EndLoc.GridSnap(50.0f);
 	}
+
+	const TArray<AActor*> IgnoredActors = {M_Owner, M_CurrentBlock};
+	TArray<FHitResult> BoxHits;
+
+	UKismetSystemLibrary::BoxTraceMulti(GetWorld(),
+	                                    M_BlocLoc,
+	                                    M_BlocLoc,
+	                                    FVector(50.0f),
+	                                    FRotator::ZeroRotator,
+	                                    TraceTypeQuery1,
+	                                    false,
+	                                    IgnoredActors,
+	                                    EDrawDebugTrace::ForOneFrame,
+	                                    BoxHits,
+	                                    true);
+
+	for (const auto& OneHit : BoxHits)
+	{
+		M_BlocLoc += OneHit.Normal;
+		UE_LOG(LogBC_BuildingComponent, Display, TEXT("Hit: %s"), *OneHit.Normal.ToString());
+	}
+
+	M_CurrentBlock->SetActorLocation(M_BlocLoc);
 }
