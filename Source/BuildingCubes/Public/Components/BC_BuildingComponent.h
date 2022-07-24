@@ -20,6 +20,7 @@ public:
 
 	void StartAction();
 	void EndAction();
+	void ChangeMaterial(float Value);
 
 protected:
 	virtual void BeginPlay() override;
@@ -45,6 +46,10 @@ private:
 	bool M_isStartDestroy;
 	bool M_isStartPreview;
 
+	int32 M_CurrentMatIndex;
+
+	int32 M_DeltaIndex;
+
 	EActionType M_CurrentAction;
 
 	FVector M_BlocLoc;
@@ -56,13 +61,11 @@ private:
 	ABC_C_BaseBlock* M_CurrentBlock;
 
 	UPROPERTY()
-	UMaterialInstanceDynamic* M_CurrentPreviewMat;
-
-	UPROPERTY()
-	UMaterialInstanceDynamic* M_CurrentBaseMat;
+	UMaterialInstanceDynamic* M_CurrentMat;
 
 	void DrawTrace(TArray<AActor*> IgnoredActors, FHitResult& HitResult, float MaxDistance);
 	bool CreateBlock(const FHitResult& HitResult);
 	void CalculateStartEndLoc(float Distance, FVector& StartLoc, FVector& EndLoc);
 	void SetBlockLocation(const FHitResult& HitResult);
+	void CreateAndSetMaterial(UMaterialInterface* ParentMaterial, bool WithoutChangeIndex);
 };

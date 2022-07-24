@@ -36,8 +36,10 @@ void ABC_C_Character::BeginPlay()
 	check(BC_FirstPersonGun);
 	check(BC_LightSphere);
 
-	BC_FirstPersonGun->AttachToComponent(BC_FirstPersonMesh,FAttachmentTransformRules::SnapToTargetIncludingScale,FName("GripPoint"));
-	BC_LightSphere->AttachToComponent(BC_FirstPersonGun,FAttachmentTransformRules::SnapToTargetNotIncludingScale,FName("Muzzle"));
+	BC_FirstPersonGun->AttachToComponent(BC_FirstPersonMesh, FAttachmentTransformRules::SnapToTargetIncludingScale,
+	                                     FName("GripPoint"));
+	BC_LightSphere->AttachToComponent(BC_FirstPersonGun, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+	                                  FName("Muzzle"));
 }
 
 void ABC_C_Character::Tick(float DeltaTime)
@@ -51,25 +53,27 @@ void ABC_C_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 	check(PlayerInputComponent);
 
-	PlayerInputComponent->BindAxis(FName("Move Forward / Backward"),this,&ABC_C_Character::MoveForward);
-	PlayerInputComponent->BindAxis(FName("Move Right / Left"),this,&ABC_C_Character::MoveRight);
-	PlayerInputComponent->BindAxis(FName("Turn Right / Left Mouse"),this,&ABC_C_Character::AddControllerYawInput);
-	PlayerInputComponent->BindAxis(FName("Look Up / Down Mouse"),this,&ABC_C_Character::AddControllerPitchInput);
-	PlayerInputComponent->BindAction(FName("Jump"),IE_Pressed,this,&ABC_C_Character::Jump);
-	PlayerInputComponent->BindAction(FName("PrimaryAction"),IE_Pressed,this,&ABC_C_Character::StartAction);
-	PlayerInputComponent->BindAction(FName("PrimaryAction"),IE_Released,this,&ABC_C_Character::EndAction);
+	PlayerInputComponent->BindAxis(FName("Move Forward / Backward"), this, &ABC_C_Character::MoveForward);
+	PlayerInputComponent->BindAxis(FName("Move Right / Left"), this, &ABC_C_Character::MoveRight);
+	PlayerInputComponent->BindAxis(FName("Turn Right / Left Mouse"), this, &ABC_C_Character::AddControllerYawInput);
+	PlayerInputComponent->BindAxis(FName("Look Up / Down Mouse"), this, &ABC_C_Character::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis(FName("Change Material"), this, &ABC_C_Character::ChangeMaterial);
+
+	PlayerInputComponent->BindAction(FName("Jump"), IE_Pressed, this, &ABC_C_Character::Jump);
+	PlayerInputComponent->BindAction(FName("PrimaryAction"), IE_Pressed, this, &ABC_C_Character::StartAction);
+	PlayerInputComponent->BindAction(FName("PrimaryAction"), IE_Released, this, &ABC_C_Character::EndAction);
 }
 
 void ABC_C_Character::MoveForward(float Value)
 {
-	if(FMath::IsNearlyZero(Value)) return;
-	AddMovementInput(GetActorForwardVector(),Value);
+	if (FMath::IsNearlyZero(Value)) return;
+	AddMovementInput(GetActorForwardVector(), Value);
 }
 
 void ABC_C_Character::MoveRight(float Value)
 {
-	if(FMath::IsNearlyZero(Value)) return;
-	AddMovementInput(GetActorRightVector(),Value);
+	if (FMath::IsNearlyZero(Value)) return;
+	AddMovementInput(GetActorRightVector(), Value);
 }
 
 void ABC_C_Character::StartAction()
@@ -80,4 +84,10 @@ void ABC_C_Character::StartAction()
 void ABC_C_Character::EndAction()
 {
 	BC_BuildingComponent->EndAction();
+}
+
+void ABC_C_Character::ChangeMaterial(float Value)
+{
+	if(FMath::IsNearlyZero(Value)) return;
+	BC_BuildingComponent->ChangeMaterial(Value);
 }
