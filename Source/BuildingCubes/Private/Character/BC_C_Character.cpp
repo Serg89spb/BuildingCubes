@@ -62,6 +62,7 @@ void ABC_C_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction(FName("Jump"), IE_Pressed, this, &ABC_C_Character::Jump);
 	PlayerInputComponent->BindAction(FName("PrimaryAction"), IE_Pressed, this, &ABC_C_Character::StartAction);
 	PlayerInputComponent->BindAction(FName("PrimaryAction"), IE_Released, this, &ABC_C_Character::EndAction);
+	PlayerInputComponent->BindAction(FName("Switch Action"), IE_Pressed, this, &ABC_C_Character::SwitchAction);
 }
 
 void ABC_C_Character::MoveForward(float Value)
@@ -90,4 +91,9 @@ void ABC_C_Character::ChangeMaterial(float Value)
 {
 	if(FMath::IsNearlyZero(Value)) return;
 	BC_BuildingComponent->ChangeMaterial(Value);
+}
+
+void ABC_C_Character::SwitchAction()
+{
+	BC_BuildingComponent->SwitchAction();
 }

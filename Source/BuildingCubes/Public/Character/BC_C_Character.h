@@ -45,4 +45,5 @@ private:
 	void StartAction();
 	void EndAction();
 	void ChangeMaterial(float Value);
+	void SwitchAction();
 };

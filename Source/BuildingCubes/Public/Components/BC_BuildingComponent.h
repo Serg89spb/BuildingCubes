@@ -21,6 +21,7 @@ public:
 	void StartAction();
 	void EndAction();
 	void ChangeMaterial(float Value);
+	void SwitchAction();
 
 protected:
 	virtual void BeginPlay() override;
@@ -63,9 +64,12 @@ private:
 	UPROPERTY()
 	UMaterialInstanceDynamic* M_CurrentMat;
 
+	UPROPERTY()
+	UMaterialInstanceDynamic* M_LightSphereMat;
+
 	void DrawTrace(TArray<AActor*> IgnoredActors, FHitResult& HitResult, float MaxDistance);
 	bool CreateBlock(const FHitResult& HitResult);
 	void CalculateStartEndLoc(float Distance, FVector& StartLoc, FVector& EndLoc);
 	void SetBlockLocation(const FHitResult& HitResult);
-	void CreateAndSetMaterial(UMaterialInterface* ParentMaterial, bool WithoutChangeIndex);
+	void CreateAndSetMaterial(UMaterialInterface* ParentMaterial);
 };

@@ -35,11 +35,11 @@ void UBC_BuildingComponent::EndAction()
 		M_isStartBuilding = false;
 		M_isStartPreview = false;
 
-		CreateAndSetMaterial(BlockMaterialPairs[M_CurrentMatIndex].Base,true);
+		CreateAndSetMaterial(BlockMaterialPairs[M_CurrentMatIndex].Base);
 	}
 	if (M_CurrentAction == EActionType::Destroy)
 	{
-		M_isStartDestroy = true;
+		M_isStartDestroy = false;
 	}
 	UE_LOG(LogBC_BuildingComponent, Display, TEXT("End Action"));
 }
@@ -56,7 +56,25 @@ void UBC_BuildingComponent::ChangeMaterial(float Value)
 	{
 		M_CurrentMatIndex = BlockMaterialPairs.Num() - 1;
 	}
+	if (M_isStartPreview)
+	{
+		CreateAndSetMaterial(BlockMaterialPairs[M_CurrentMatIndex].Preview);
+	}
 	UE_LOG(LogBC_BuildingComponent, Display, TEXT("M_CurrentMatIndex %i"), M_CurrentMatIndex);
+}
+
+void UBC_BuildingComponent::SwitchAction()
+{
+	if (M_CurrentAction == EActionType::Destroy || M_CurrentAction == EActionType::None)
+	{
+		M_CurrentAction = EActionType::Building;
+		M_LightSphereMat->SetVectorParameterValue(FName("Color"),FLinearColor::Green);
+	}
+	else
+	{
+		M_CurrentAction = EActionType::Destroy;
+		M_LightSphereMat->SetVectorParameterValue(FName("Color"),FLinearColor::Red);
+	}
 }
 
 void UBC_BuildingComponent::BeginPlay()
@@ -66,6 +84,18 @@ void UBC_BuildingComponent::BeginPlay()
 	M_Owner = Cast<ABC_C_Character>(GetOwner());
 	M_CurrentAction = EActionType::Building;
 	M_CurrentMatIndex = 0;
+
+	if(IsValid(M_Owner) &&
+		IsValid(M_Owner->BC_LightSphere) &&
+		IsValid(M_Owner->BC_LightSphere->GetMaterial(0)) &&
+		IsValid(GetWorld()))
+	{
+		M_LightSphereMat = UMaterialInstanceDynamic::Create(M_Owner->BC_LightSphere->GetMaterial(0),GetWorld());
+		if(M_LightSphereMat)
+		{
+			M_Owner->BC_LightSphere->SetMaterial(0,M_LightSphereMat);
+		}
+	}
 }
 
 
@@ -85,7 +115,18 @@ void UBC_BuildingComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		if (CreateBlock(HitResult))
 		{
 			SetBlockLocation(HitResult);
-			CreateAndSetMaterial(BlockMaterialPairs[M_CurrentMatIndex].Preview,false);
+		}
+	}
+	else if(M_isStartDestroy)
+	{
+		TArray<AActor*> IgnoredActors;
+		IgnoredActors.Add(M_Owner);
+
+		FHitResult HitResult;
+		DrawTrace(IgnoredActors, HitResult, MaxTraceDistance);
+		if(HitResult.bBlockingHit && IsValid(HitResult.GetActor()) && HitResult.GetActor()->IsA<ABC_C_BaseBlock>())
+		{
+			HitResult.GetActor()->Destroy();
 		}
 	}
 }
@@ -118,7 +159,7 @@ bool UBC_BuildingComponent::CreateBlock(const FHitResult& HitResult)
 	Transform.SetLocation(HitResult.Location);
 	M_CurrentBlock = GetWorld()->SpawnActor<ABC_C_BaseBlock>(BigBlockClass, Transform);
 
-	CreateAndSetMaterial(BlockMaterialPairs[M_CurrentMatIndex].Preview,true);
+	CreateAndSetMaterial(BlockMaterialPairs[M_CurrentMatIndex].Preview);
 	return M_isStartPreview = IsValid(M_CurrentBlock);
 }
 
@@ -165,16 +206,13 @@ void UBC_BuildingComponent::SetBlockLocation(const FHitResult& HitResult)
 	M_CurrentBlock->SetActorLocation(M_BlocLoc);
 }
 
-void UBC_BuildingComponent::CreateAndSetMaterial(UMaterialInterface* ParentMaterial, bool WithoutChangeIndex)
+void UBC_BuildingComponent::CreateAndSetMaterial(UMaterialInterface* ParentMaterial)
 {
-	if (M_DeltaIndex != M_CurrentMatIndex || WithoutChangeIndex)
+	if (IsValid(M_CurrentBlock) && IsValid(GetWorld()) && IsValid(ParentMaterial))
 	{
-		if (IsValid(M_CurrentBlock) && IsValid(GetWorld()) && IsValid(ParentMaterial))
-		{
-			M_CurrentMat = UMaterialInstanceDynamic::Create(ParentMaterial, GetWorld());
-			M_CurrentBlock->BC_MeshComponent->SetMaterial(0, M_CurrentMat);
-			M_DeltaIndex = M_CurrentMatIndex;
-			UE_LOG(LogBC_BuildingComponent, Display, TEXT("Change Mat"));
-		}
+		M_CurrentMat = UMaterialInstanceDynamic::Create(ParentMaterial, GetWorld());
+		M_CurrentBlock->BC_MeshComponent->SetMaterial(0, M_CurrentMat);
+		M_DeltaIndex = M_CurrentMatIndex;
+		UE_LOG(LogBC_BuildingComponent, Display, TEXT("Change Mat"));
 	}
 }
