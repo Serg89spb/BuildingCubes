@@ -20,4 +20,6 @@ struct FBlockMaterialPair
 	UMaterialInterface* Preview;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	UMaterialInterface* Base;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	FLinearColor EmitColor;
 };
