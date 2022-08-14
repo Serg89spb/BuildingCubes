@@ -83,6 +83,27 @@ void UBC_BuildingComponent::SwitchAction()
 	}
 }
 
+void UBC_BuildingComponent::ChangeBlock()
+{
+	M_CurrentBlockIndex ++;
+
+	if (M_CurrentBlockIndex == BlockClasses.Num())
+	{
+		M_CurrentBlockIndex = 0;
+	}
+	else if (M_CurrentBlockIndex == -1)
+	{
+		M_CurrentBlockIndex = BlockMaterialPairs.Num() - 1;
+	}
+	if (M_isStartPreview)
+	{
+		M_CurrentBlock->Destroy();
+		M_isStartPreview = false;
+		M_isStartBuilding = true;
+	}
+	
+}
+
 void UBC_BuildingComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -169,10 +190,16 @@ void UBC_BuildingComponent::DrawTrace(TArray<AActor*> IgnoredActors, FHitResult&
 bool UBC_BuildingComponent::CreateBlock(const FHitResult& HitResult)
 {
 	if (M_isStartPreview) return true;
-	if (!IsValid(BigBlockClass)) return false;
+	if (!IsValid(BlockClasses[M_CurrentBlockIndex])) return false;
 	FTransform Transform;
 	Transform.SetLocation(HitResult.Location);
-	M_CurrentBlock = GetWorld()->SpawnActor<ABC_C_BaseBlock>(BigBlockClass, Transform);
+	M_CurrentBlock = GetWorld()->SpawnActor<ABC_C_BaseBlock>(BlockClasses[M_CurrentBlockIndex], Transform);
+	if(IsValid(M_CurrentBlock))
+	{
+		FVector Origin(ForceInitToZero), Extend(ForceInitToZero);
+		M_CurrentBlock->GetActorBounds(false,Origin,Extend);
+		M_CurrentBlockExtend = Extend.X;
+	}
 
 	CreateAndSetMaterial(BlockMaterialPairs[M_CurrentMatIndex].Preview);
 	return M_isStartPreview = IsValid(M_CurrentBlock);
@@ -188,13 +215,13 @@ void UBC_BuildingComponent::SetBlockLocation(const FHitResult& HitResult)
 {
 	if (HitResult.bBlockingHit)
 	{
-		M_BlocLoc = HitResult.Location.GridSnap(50.0f) + HitResult.Normal * 50.0f;
+		M_BlocLoc = HitResult.Location.GridSnap(M_CurrentBlockExtend) + HitResult.Normal * M_CurrentBlockExtend;
 	}
 	else
 	{
 		FVector StartLoc(ForceInitToZero), EndLoc(ForceInitToZero);
 		CalculateStartEndLoc(WithoutHitDistance, StartLoc, EndLoc);
-		M_BlocLoc = EndLoc.GridSnap(50.0f);
+		M_BlocLoc = EndLoc.GridSnap(M_CurrentBlockExtend);
 	}
 
 	const TArray<AActor*> IgnoredActors = {M_Owner, M_CurrentBlock};
@@ -203,7 +230,7 @@ void UBC_BuildingComponent::SetBlockLocation(const FHitResult& HitResult)
 	UKismetSystemLibrary::BoxTraceMulti(GetWorld(),
 	                                    M_BlocLoc,
 	                                    M_BlocLoc,
-	                                    FVector(50.0f),
+	                                    FVector(M_CurrentBlockExtend),
 	                                    FRotator::ZeroRotator,
 	                                    TraceTypeQuery1,
 	                                    false,
@@ -218,6 +245,7 @@ void UBC_BuildingComponent::SetBlockLocation(const FHitResult& HitResult)
 		//UE_LOG(LogBC_BuildingComponent, Display, TEXT("Hit: %s"), *OneHit.Normal.ToString());
 	}
 
+	if(!IsValid(M_CurrentBlock)) return;
 	M_CurrentBlock->SetActorLocation(M_BlocLoc);
 }
 

@@ -63,6 +63,7 @@ void ABC_C_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction(FName("PrimaryAction"), IE_Pressed, this, &ABC_C_Character::StartAction);
 	PlayerInputComponent->BindAction(FName("PrimaryAction"), IE_Released, this, &ABC_C_Character::EndAction);
 	PlayerInputComponent->BindAction(FName("Switch Action"), IE_Pressed, this, &ABC_C_Character::SwitchAction);
+	PlayerInputComponent->BindAction(FName("Change Block"), IE_Pressed, this, &ABC_C_Character::ChangeBlock);
 }
 
 void ABC_C_Character::MoveForward(float Value)
@@ -96,4 +97,9 @@ void ABC_C_Character::ChangeMaterial(float Value)
 void ABC_C_Character::SwitchAction()
 {
 	BC_BuildingComponent->SwitchAction();
+}
+
+void ABC_C_Character::ChangeBlock()
+{
+	BC_BuildingComponent->ChangeBlock();
 }

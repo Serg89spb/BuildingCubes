@@ -22,12 +22,13 @@ public:
 	void EndAction();
 	void ChangeMaterial(float Value);
 	void SwitchAction();
+	void ChangeBlock();
 
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Subclass")
-	TSubclassOf<AActor> BigBlockClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Subclasses")
+	TArray<TSubclassOf<AActor>> BlockClasses;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Trace")
 	float MaxTraceDistance = 3000.0f;
@@ -48,8 +49,10 @@ private:
 	bool M_isStartPreview;
 
 	int32 M_CurrentMatIndex;
-
+	int32 M_CurrentBlockIndex;
 	int32 M_DeltaIndex;
+
+	float M_CurrentBlockExtend;
 
 	EActionType M_CurrentAction;
 
