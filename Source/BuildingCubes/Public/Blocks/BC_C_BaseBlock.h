@@ -15,6 +15,8 @@ public:
 	ABC_C_BaseBlock();
 
 	void OnEndBuilding();
+	void OnStartDestroy();
+	void OnResetDestroy();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
 	UStaticMeshComponent* BC_MeshComponent;
@@ -39,6 +41,8 @@ public:
 
 private:
 	bool M_StartFadeEmit;
+	bool M_StartRiseEmit;
+	bool M_ResetRiseEmit;
 
 	float M_FXEmitPower;
 

@@ -45,6 +45,7 @@ void UBC_BuildingComponent::EndAction()
 	if (M_CurrentAction == EActionType::Destroy)
 	{
 		M_isStartDestroy = false;
+		Cast<ABC_C_BaseBlock>(M_HitActor)->OnResetDestroy();
 	}
 	UE_LOG(LogBC_BuildingComponent, Display, TEXT("End Action"));
 }
@@ -129,9 +130,18 @@ void UBC_BuildingComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 		FHitResult HitResult;
 		DrawTrace(IgnoredActors, HitResult, MaxTraceDistance);
-		if(HitResult.bBlockingHit && IsValid(HitResult.GetActor()) && HitResult.GetActor()->IsA<ABC_C_BaseBlock>())
+		if(HitResult.bBlockingHit && IsValid(HitResult.GetActor()))
 		{
-			HitResult.GetActor()->Destroy();
+			if(HitResult.GetActor()->IsA<ABC_C_BaseBlock>())
+			{
+				Cast<ABC_C_BaseBlock>(HitResult.GetActor())->OnStartDestroy();
+			}
+
+			if(IsValid(M_HitActor) && M_HitActor->GetName() != HitResult.GetActor()->GetName())
+			{
+				Cast<ABC_C_BaseBlock>(M_HitActor)->OnResetDestroy();
+			}
+			M_HitActor = HitResult.GetActor();
 		}
 	}
 }

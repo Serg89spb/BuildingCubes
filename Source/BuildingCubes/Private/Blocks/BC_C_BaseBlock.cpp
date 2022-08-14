@@ -20,6 +20,21 @@ void ABC_C_BaseBlock::OnEndBuilding()
 	}
 }
 
+void ABC_C_BaseBlock::OnStartDestroy()
+{
+	M_StartFadeEmit = false;
+	M_StartRiseEmit = true;
+	M_ResetRiseEmit = false;
+}
+
+void ABC_C_BaseBlock::OnResetDestroy()
+{
+	if(!IsValid(this)) return;
+	M_StartFadeEmit = true;
+	M_StartRiseEmit = false;
+	M_ResetRiseEmit = true;
+}
+
 void ABC_C_BaseBlock::BeginPlay()
 {
 	Super::BeginPlay();
@@ -34,11 +49,24 @@ void ABC_C_BaseBlock::Tick(float DeltaTime)
 		if(M_FXEmitPower > 0)
 		{
 			M_FXEmitPower -= DeltaTime;
-			ChangeEmitPower(M_FXEmitPower * FadePowerMult);
+			const float Power = M_FXEmitPower * (M_ResetRiseEmit ? RisePowerMult : FadePowerMult);
+			ChangeEmitPower(Power);
 		}
 		else
 		{
 			ResetEmitToZero();
+		}
+	}
+	else if(M_StartRiseEmit)
+	{
+		if(M_FXEmitPower < RiseTime)
+		{
+			M_FXEmitPower += DeltaTime;
+			ChangeEmitPower(M_FXEmitPower * RisePowerMult);
+		}
+		else
+		{
+			Destroy();
 		}
 	}
 
